@@ -12,6 +12,10 @@ The R35 driver needs the two files in `espressif/`:
 completion and PWR1 interfaces used by the driver and enforces the negotiated
 TX block-ack window, up to the existing eight-frame firmware ceiling.
 
+For copying these binaries to a target, building/installing the Linux module
+and checking startup, follow [the installation guide](../INSTALL.md). A
+firmware rebuild is optional; the tested binaries are already included.
+
 ## License and provenance
 
 The firmware is distributed under the Apache License 2.0 in [`LICENSE`](LICENSE).

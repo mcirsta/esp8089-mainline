@@ -4,6 +4,10 @@ This repository contains an in-tree Linux `mac80211` driver candidate for the
 Espressif ESP8089 SDIO Wi-Fi chip (`6666:1111`). It is the R35 source tested on
 the Xiaomi/Mijia KQJCY02QP air monitor with Linux 7.2.11.
 
+See [Building and installing ESP8089](INSTALL.md) for the complete kernel
+integration, cross-compilation, module/firmware installation and verification
+procedure, including the Mijia RAM-only workflow.
+
 The driver is derived from Espressif's GPL driver and the cleanup work in
 [`Icenowy/esp8089`](https://github.com/Icenowy/esp8089), based on commit
 `71c53ead1ce24fb5cee1f9c2eb251be1f3125e37`. The original vendor-derived
@@ -56,7 +60,8 @@ The repository contains the driver directory as it is intended to appear under:
 drivers/net/wireless/espressif/esp8089/
 ```
 
-Add the directory to the parent Espressif Kconfig and Makefile, then enable:
+Follow [INSTALL.md](INSTALL.md#2-integrate-with-kconfig-and-kbuild) to add the
+driver and any missing Espressif vendor entries, then enable:
 
 ```text
 CONFIG_ESP8089=m
