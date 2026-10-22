@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: GPL-2.0-only
+config ESP8089
+	tristate "Espressif ESP8089 SDIO wireless support"
+	depends on MMC && MAC80211
+	help
+	  Support for the Espressif ESP8089 2.4 GHz SDIO wireless chip in
+	  station mode. Requires espressif/esp8089-cal-v19.bin and
+	  espressif/esp8089-txr8-v1.bin in the firmware search path.
+	  The runtime firmware must support the TXR8 and PWR1 interfaces;
+	  an incompatible firmware is rejected during probe.
+
+	  To compile this driver as a module, choose M here. The module
+	  will be called esp8089.
+
+config ESP8089_KUNIT_TEST
+	tristate "KUnit tests for ESP8089 firmware and protocol" if !KUNIT_ALL_TESTS
+	depends on KUNIT && ESP8089
+	default KUNIT_ALL_TESTS
+	help
+	  Exercise firmware bounds, unaligned descriptors, transfer padding,
+	  credit geometry, RX metadata, negotiated BA windows and compact
+	  completion validation. These tests need
+	  no device or downloaded firmware and build separately from the driver.
+	  The module will be called esp8089-test.
