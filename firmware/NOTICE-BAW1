@@ -1,0 +1,16 @@
+ESP8089 TXR8-BAW1 modifications, 21 October 2026
+
+This firmware changes the consolidated TXR8 baseline by enforcing the minimum
+negotiated TX BA window per peer before enabling a session, retaining the
+existing eight-frame ceiling. Three old pipeline-stop diagnostic hooks are
+removed to provide overlay space. No new command ABI or state allocation.
+
+The original Apache-2.0 license and attribution are retained verbatim in
+LICENSE-firmware.txt and NOTICE-firmware.txt. BASELINE-CONSOLIDATION-NOTICE.txt
+is a historical baseline record; its no-byte-change statement does not describe
+this modified TXR8-BAW1 image. The new files identify their Apache-2.0 license.
+The test/production Linux driver is separately GPL-2.0-only.
+
+Firmware sources here are extension sources, not a recovered vendor SDK or
+chip ROM source. See README.rst, provenance.json and overlay-manifest.json
+for the exact modified image, input identity and experimental validation.

@@ -10,4 +10,5 @@
 .tmp_versions/
 modules.order
 Module.symvers
+firmware/source/txr7-link-*/
 

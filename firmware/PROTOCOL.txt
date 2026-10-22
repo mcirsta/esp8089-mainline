@@ -1,0 +1,11 @@
+TXR8 compact completion ABI; little-endian;52byte SIP event23.
+Command28: magic0x38525854,cursor,flags (same ACK/flush/replay/capability rules).
+Payload words0..3:magic,first absolute completion cursor,count0..4,overflow.
+Words4..11:up to4 pairs(sequence32,status32). Word12:retention capacity32.
+Status bits0..15:DATA attempts;16..20:observed final DATA PHY0..31;
+21..23:outcome1..4;24:NoACK;25..30:reserved zero;31:attempt history known.
+Unknown attempt history requires bits0..20zero. Known history requires
+attempts1..65535 and outcome1or2. Abort/timeout outcomes3/4 are unknown.
+Outcome0/5..7,reserved bits,overflow,count>4,invalid capacity and wrong magic
+are rejected before pending skb consumption. Raw descriptor metadata is not
+part of this ABI. Four records fit the unchanged original64byte ROM event.

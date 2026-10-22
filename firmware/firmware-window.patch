@@ -1,0 +1,224 @@
+--- a/build-overlay.py
++++ b/build-overlay.py
+@@ -63,14 +63,14 @@
+         raise ValueError(hex(address))
+
+     for source, obj in [('txreport.c','report.o'),('powerctl.c','powerctl.o'),
+-                        ('debug-read.c','debug-read.o'),('attempts.c','attempts.o'),('event-alloc.c','event-alloc.o'),('trace.c','trace.o')]:
++                        ('debug-read.c','debug-read.o'),('attempts.c','attempts.o'),('event-alloc.c','event-alloc.o'),('trace.c','trace.o'),('ba-window.c','ba-window.o')]:
+         run(TOOL+'gcc', '-Os', '-mlongcalls', '-ffreestanding', '-fno-builtin',
+             '-fno-unwind-tables', '-fno-asynchronous-unwind-tables', '-nostdlib',
+             '-ffunction-sections', '-Wall', '-Wextra', '-Werror', '-c', source, '-o', obj)
+     run(TOOL+'as','handoff.S','-o','handoff.o')
+-    run(TOOL+'as','pipeline.S','-o','pipeline.o')
++    run(TOOL+'as','ba-window.S','-o','ba-window-entry.o')
+     run(TOOL+'ld','-T','overlay.ld','-Map=overlay.map','report.o','powerctl.o',
+-        'debug-read.o','handoff.o','attempts.o','event-alloc.o','trace.o','pipeline.o','-o','overlay.elf')
++        'debug-read.o','handoff.o','attempts.o','event-alloc.o','trace.o','ba-window.o','ba-window-entry.o','-o','overlay.elf')
+     mapping=(P/'overlay.map').read_text()
+
+     def symbol(name):
+@@ -106,7 +106,8 @@
+         ('success3',0x401075aa,symbol('hook_success')),
+         ('timeout',0x40107bc6,symbol('hook_timeout')),
+         ('agg_timeout',0x40107bbe,symbol('hook_agg_timeout')),
+-        ('ba',0x401097bb,symbol('hook_ba'))]:
++        ('ba',0x401097bb,symbol('hook_ba')),
++        ('ba_window',0x401013c7,symbol('ba_window_entry'))]:
+         (P/(name+'.S')).write_text('.section .hook,"ax",@progbits\n'
+             '.begin no-transform\ncall0 target\n.end no-transform\n')
+         (P/(name+'.ld')).write_text(f'PROVIDE(target = {target:#x});\n'
+@@ -122,26 +123,8 @@
+                      'call_address':address,'target':target,
+                      'original_sha256':hashlib.sha256(read(base,8)).hexdigest()})
+
+-    # Three terminal-path probes. Original nonterminal paths and entry ABI
+-    # remain untouched; all modified neighbors are copied identically.
+-    hooks=[('empty',0x4010ad6c,bytes.fromhex('168409'),'beqz a4,target',symbol('pipeline_empty')),
+-           ('ineligible',0x4010ad79,bytes.fromhex('c62200'),'j target',symbol('pipeline_ineligible')),
+-           ('limit',0x4010adb9,bytes.fromhex('0c06860500'),'j target\nnop.n',symbol('pipeline_limit'))]
+-    for name,address,before,assembly,target in hooks:
+-        assert read(address,len(before))==before
+-        (P/(name+'.S')).write_text('.section .hook,"ax",@progbits\n.begin no-transform\n'+assembly+'\n.end no-transform\n')
+-        (P/(name+'.ld')).write_text(f'PROVIDE(target = {target:#x});\nSECTIONS {{ . = {address:#x}; .hook : {{ *(.hook) }} }}\n')
+-        run(TOOL+'as',name+'.S','-o',name+'.o')
+-        run(TOOL+'ld','-T',name+'.ld',name+'.o','-o',name+'.elf')
+-        patch=extract(name+'.elf','.hook',name+'.bin')
+-        assert len(patch)==len(before)
+-        base=address&~3;length=(address+len(before)-base+3)&~3
+-        block=bytearray(read(base,length));offset=address-base
+-        block[offset:offset+len(patch)]=patch
+-        plan.append({'role':'pipeline_'+name,'destination':base,'source':stage_bytes(block),
+-                     'bytes':length,'sha256':hashlib.sha256(block).hexdigest(),
+-                     'patch_address':address,'patch_bytes':len(patch),'target':target,
+-                     'original_sha256':hashlib.sha256(read(base,length)).hexdigest()})
++    # Retire the three diagnostic pipeline-stop hooks. Their former code
++    # and staging space now hold the TX BA enforcement hook; no new RAM pool.
+     # Proven rate-dependent byte budget: rates21..23 and29..31 select
+     # this sole-caller literal. Keep the station peer maximum clamp and its
+     # eight-frame sequence window unchanged; only allow the eighth frame.
+@@ -247,7 +230,7 @@
+         'sha256':hashlib.sha256(image).hexdigest(),'original_sha256':EXPECTED,
+         'state_address':0x3fffb348,'state_bytes':len(state),
+         'state_symbols':{n:hex(symbol(n)) for n in ['report_state','power_state','attempt_state','event_alloc_deferred','radio_trace']},
+-        'source_sha256':{n:hashlib.sha256((P/n).read_bytes()).hexdigest() for n in ['txreport.c','attempts.c','powerctl.c','debug-read.c','fw-critical.h','event-alloc.c','trace.c','pipeline.S','handoff.S','overlay.ld','build-overlay.py']},
++        'source_sha256':{n:hashlib.sha256((P/n).read_bytes()).hexdigest() for n in ['txreport.c','attempts.c','powerctl.c','debug-read.c','fw-critical.h','event-alloc.c','trace.c','ba-window.c','ba-window.S','handoff.S','overlay.ld','build-overlay.py']},
+         'staging_address':stage_address,'staging_bytes':len(stage),
+         'plan_address':plan_address,'plan':plan,
+         'upper':{'destination':0x4010fcc8,'source':upper_source,'bytes':len(upper),
+@@ -257,7 +240,7 @@
+         'event_capacity':64,'payload_bytes':52,'records_per_event':4,
+         'protocol':'TXR8','retained_completion_capacity':32,
+         'notification_batch_records':4,'explicit_partial_flush_flag':1,
+-        'active_attempt_tracking_slots':16,'event_buffer_bytes':64,'pipeline_stop_words':{'empty':10,'ineligible':11,'byte_cap':12,'sequence_cap':13},'radio_group_hist_bins':9,'radio_group_sum_word':9,'radio_group_max_word':14,'original_reclaim_unwrapped':True,
++        'active_attempt_tracking_slots':16,'event_buffer_bytes':64,'tx_ba_window_enforced':True,'tx_ba_policy':'minimum accepted TX window per peer lifetime, ceiling8','pipeline_stop_probes_removed':True,'radio_group_hist_bins':9,'radio_group_sum_word':9,'radio_group_max_word':14,'original_reclaim_unwrapped':True,
+         'install_trigger':'first valid explicit TXR8 capability request, after runtime INIT',
+         'init_after_install':'unsupported; host must reset and download fresh firmware',
+         'license':'Apache-2.0','experimental':True,'mainline_ready':False}
+--- a/overlay.ld
++++ b/overlay.ld
+@@ -9,6 +9,7 @@
+ PROVIDE(original_timeout = 0x40107754);
+ PROVIDE(original_agg_timeout = 0x401079dc);
+ PROVIDE(original_ba = 0x4010b060);
++PROVIDE(original_ba_state = 0x4010cae4);
+ SECTIONS
+ {
+  . = 0x3fffb348;
+@@ -50,10 +51,10 @@
+  .tracker : { attempts.o(.literal.note) attempts.o(.text.note) . = ALIGN(4); }
+  ASSERT(. <= 0x40100cd4, "Tracker overflow")
+  . = 0x4010b520;
+- .event_allocator : { pipeline.o(.literal*) pipeline.o(.text*)
++ .event_allocator : { ba-window-entry.o(.text*)
++  ba-window.o(.literal*) ba-window.o(.text*)
+   event-alloc.o(.literal*) event-alloc.o(.text*)
+   trace.o(.literal.trace_aggregate) trace.o(.text.trace_aggregate) . = ALIGN(4); }
+- ASSERT(pipeline_empty <= 0x4010b56c, "Queue-empty branch target out of range")
+  ASSERT(. <= 0x4010b660, "Event allocator exceeds retired PP INIT code")
+  . = 0x4010fcc8;
+  .upper : {
+--- a/test-overlay.py
++++ b/test-overlay.py
+@@ -31,7 +31,7 @@
+  if base<=0x40100904<base+len(data):
+   struct.pack_into('<I',expected,0x40100904-base,m['entry'])
+  assert read(base,len(data))==expected
+-allowed=[(0x4010ad6c,0x4010ad70),(0x4010ad78,0x4010ad7c),(0x4010adb8,0x4010adc0),(0x4010c1e0,0x4010c1e4),(0x40100984,0x40100988),(0x4010b520,0x4010b660),(0x40100358,0x40100426),(0x4010045c,0x401004f3),
++allowed=[(0x401013c4,0x401013cc),(0x4010ad6c,0x4010ad70),(0x4010ad78,0x4010ad7c),(0x4010adb8,0x4010adc0),(0x4010c1e0,0x4010c1e4),(0x40100984,0x40100988),(0x4010b520,0x4010b660),(0x40100358,0x40100426),(0x4010045c,0x401004f3),
+          (0x40101414,0x40101548),(0x4010d3e4,0x4010d474),
+          (0x4010a1d4,0x4010a1dc),(0x401012ac,0x401012b4),
+          (0x4010fcc8,0x40110000), (0x4010051c,0x401005bc),
+--- a/test-link-layout.py
++++ b/test-link-layout.py
+@@ -10,6 +10,6 @@
+     d=Path(temp);source=d/'omitted.S';obj=d/'omitted.o'
+     source.write_text('.section .text.omitted_helper,"ax",@progbits\n.byte 0,0,0,0\n')
+     subprocess.run([a.toolchain_prefix+'as',str(source),'-o',str(obj)],check=True)
+-    r=subprocess.run([a.toolchain_prefix+'ld','-T','overlay.ld','report.o','powerctl.o','debug-read.o','handoff.o','attempts.o','event-alloc.o',str(obj),'-o',str(d/'rejected.elf')],cwd=here,capture_output=True,text=True)
++    r=subprocess.run([a.toolchain_prefix+'ld','-T','overlay.ld','report.o','powerctl.o','debug-read.o','handoff.o','attempts.o','event-alloc.o','trace.o','ba-window.o','ba-window-entry.o',str(obj),'-o',str(d/'rejected.elf')],cwd=here,capture_output=True,text=True)
+     assert r.returncode and 'Unmapped overlay input section' in r.stderr,r.stderr
+ print('PASS: unexpected compiler section rejected by linker')
+--- /dev/null
++++ b/ba-window.c
+@@ -0,0 +1,20 @@
++// SPDX-License-Identifier: Apache-2.0
++/* The v19 aggregate builder and BAR calculation share peer byte 0x75.
++ * Keep their existing eight-frame ceiling, but never exceed any TX BA
++ * window accepted during this peer lifetime. The minimum is intentionally
++ * sticky across TID stops: raising it could violate another active TID.
++ * SETSTA initializes it to eight for a new HT peer. No new state or ABI.
++ */
++typedef unsigned int u32;
++extern void original_ba_state(unsigned char *peer, u32 action, u32 tid);
++
++void ba_window_start(unsigned char *peer, u32 action, u32 tid, u32 window)
++{
++ if (!peer || tid >= 8 || !window || window > 64)
++  return;
++ if (!peer[0x75] || peer[0x75] > 8)
++  return;
++ if (window < peer[0x75])
++  peer[0x75] = window;
++ original_ba_state(peer, action, tid);
++}
+--- /dev/null
++++ b/ba-window.S
+@@ -0,0 +1,14 @@
++/* SPDX-License-Identifier: Apache-2.0 */
++.section .text.ba_window_entry,"ax",@progbits
++.global ba_window_entry
++.type ba_window_entry,@function
++ba_window_entry:
++.begin no-transform
++ /* At the original TX_OPERATIONAL call, a12 points to the SIP payload.
++  * Keep peer/action/TID in a2/a3/a4, add negotiated window in a5.
++  * A tail jump preserves the dispatcher's original return address.
++  */
++ l8ui a5, a12, 3
++ j ba_window_start
++.end no-transform
++.size ba_window_entry,.-ba_window_entry
+--- /dev/null
++++ b/ba-window-host-test.c
+@@ -0,0 +1,60 @@
++// SPDX-License-Identifier: Apache-2.0
++#include <assert.h>
++#include <stdio.h>
++#include <string.h>
++#include "ba-window.c"
++
++static unsigned calls, observed_tid, observed_limit;
++void original_ba_state(unsigned char *peer, u32 action, u32 tid)
++{
++ assert(action == 2);
++ observed_tid = tid;
++ observed_limit = peer[0x75];
++ calls++;
++}
++
++int main(void)
++{
++ unsigned char peer[0x78], expected[sizeof(peer)];
++ unsigned tests = 0;
++
++ for (unsigned old = 1; old <= 8; old++) {
++  for (unsigned window = 1; window <= 64; window++) {
++   for (unsigned tid = 0; tid < 8; tid++) {
++    memset(peer, 0xa5, sizeof(peer));
++    peer[0x75] = old;
++    memcpy(expected, peer, sizeof(peer));
++    expected[0x75] = old < window ? old : window;
++    calls = 0;
++    ba_window_start(peer, 2, tid, window);
++    assert(calls == 1 && observed_tid == tid);
++    assert(observed_limit == expected[0x75]);
++    assert(!memcmp(peer, expected, sizeof(peer)));
++    tests++;
++   }
++  }
++ }
++ /* Other TIDs and later sessions cannot reopen a smaller active window. */
++ peer[0x75] = 8;
++ ba_window_start(peer, 2, 0, 4);
++ ba_window_start(peer, 2, 3, 2);
++ ba_window_start(peer, 2, 0, 64);
++ assert(peer[0x75] == 2);
++ for (unsigned window = 0; window <= 255; window++) {
++  if (window && window <= 64)
++   continue;
++  peer[0x75] = 8;
++  calls = 0;
++  ba_window_start(peer, 2, 0, window);
++  assert(!calls && peer[0x75] == 8);
++ }
++ calls = 0;
++ ba_window_start(NULL, 2, 0, 1);
++ ba_window_start(peer, 2, 8, 1);
++ peer[0x75] = 0;
++ ba_window_start(peer, 2, 0, 1);
++ peer[0x75] = 9;
++ ba_window_start(peer, 2, 0, 1);
++ assert(!calls);
++ printf("PASS: %u valid peer/window/TID combinations; neighboring fields, minimum-before-enable, sticky multi-TID bound and invalid inputs\n", tests);
++}

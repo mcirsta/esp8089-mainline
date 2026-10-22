@@ -1,0 +1,233 @@
+{
+  "filename": "esp8089-txr8-v1.bin",
+  "bytes": 70048,
+  "sha256": "15b9b23c3e6dad7e071618e2bb09177f4e0ec3fe458f44ba1f0e81222694cb88",
+  "original_sha256": "1b8b7f93f40d3c2dd7ab7f3e2d29cd118604249a5926a320163bf358254e4162",
+  "state_address": 1073722184,
+  "state_bytes": 516,
+  "state_symbols": {
+    "report_state": "0x3fffb348",
+    "power_state": "0x3fffb45c",
+    "attempt_state": "0x3fffb484",
+    "event_alloc_deferred": "0x3fffb508",
+    "radio_trace": "0x3fffb50c"
+  },
+  "source_sha256": {
+    "txreport.c": "02fbd5b34a0f62b0233b4f59851bce8c1532985435c6ffd901840cb30e9f5ed0",
+    "attempts.c": "32b0711b01231ddceed6133260f2866a8dbe673e55164387da59121793dd320b",
+    "powerctl.c": "5174f254507e1b64b7b55a03d2cce4c3cee3484bb4c80161838c2d2e70a42141",
+    "debug-read.c": "0d7a44047caaf7c08f411913e4a44dc2b77896ea85805b51a85e71cb15e85471",
+    "fw-critical.h": "49a5af43a9f595d9b876d8c651906f61f2a87217938b571a589b415389e73257",
+    "event-alloc.c": "3f5def5eea90eab7a6553ef02cb7b7654c8c495ffdac516cfafc9d6d377cfdb4",
+    "trace.c": "3130e1e59501d5f99f9cf55ed08a05345519550595ef31b4f2ea0a67395827a8",
+    "ba-window.c": "3831be72da7886ca6342cee6c3c83aaed802d5aa7f311949503601ecd41aecea",
+    "ba-window.S": "4117f7afc6c1bb738b77c1aa31271946d6b1fbe58150863873f61730b8ae8b99",
+    "handoff.S": "7cbcc926f1dbc879e844120157c4d389bc4ef7de932326c8fc47495e70ea1e9b",
+    "overlay.ld": "586b850aa9037eb32c4988da141afe3ab542517b2c5938b62a230b2368188f79",
+    "build-overlay.py": "da42fd4b4af9495ae3c661e99ed1717d7753c242d300508e83cd54634a19722c"
+  },
+  "staging_address": 1073722700,
+  "staging_bytes": 2396,
+  "plan_address": 1073724868,
+  "plan": [
+    {
+      "role": "event_allocator",
+      "destination": 1074836768,
+      "source": 1073722700,
+      "bytes": 244,
+      "sha256": "d080893790b50f530c33f40fb1acd1ce7b5591b55e46cc5ab41590b9032959c6"
+    },
+    {
+      "role": "handoff",
+      "destination": 1074791256,
+      "source": 1073722944,
+      "bytes": 32,
+      "sha256": "7c6bb59fa921a7dacdcfd07441b63feefeb6e0c354cea5d6375b17aaece54bf7"
+    },
+    {
+      "role": "prepare",
+      "destination": 1074791288,
+      "source": 1073722976,
+      "bytes": 164,
+      "sha256": "319c8fc95d5e1e43fdd563f20301af002fe099e4dad1fb9364d80cd5755a53e8"
+    },
+    {
+      "role": "boot_overlay",
+      "destination": 1074791516,
+      "source": 1073723140,
+      "bytes": 144,
+      "sha256": "78421eb25addad4b253bde764b3100b71e3c0a340ab38e4218ea728e766811fc"
+    },
+    {
+      "role": "power",
+      "destination": 1074795540,
+      "source": 1073723284,
+      "bytes": 304,
+      "sha256": "23cfc83166f89885b2b9e197834644e2f0c4ebc03d749a0f8c91cc7ba471a23e"
+    },
+    {
+      "role": "reply",
+      "destination": 1074844644,
+      "source": 1073723588,
+      "bytes": 124,
+      "sha256": "bc9ae1f49b64827101dd77a257f915a0415f198698552304441302fbcda90474"
+    },
+    {
+      "role": "tracker",
+      "destination": 1074793564,
+      "source": 1073723712,
+      "bytes": 116,
+      "sha256": "d3e87d916c78a2e5bb5db25fd6e8cf683df63553fc31895a734f795fd9be5bd6"
+    },
+    {
+      "role": "wrappers",
+      "destination": 1074791708,
+      "source": 1073723828,
+      "bytes": 116,
+      "sha256": "b7d0780ce218ca5337a52cd14e0594ba552ab7b725470c80271456eb719f7a12"
+    },
+    {
+      "role": "aggwrap",
+      "destination": 1074792736,
+      "source": 1073723944,
+      "bytes": 52,
+      "sha256": "8c82124eb27ad7c63569c435129785c970b363368acad28705d05d5a03b8c689"
+    },
+    {
+      "role": "done_call",
+      "destination": 1074831828,
+      "source": 1073723996,
+      "bytes": 8,
+      "sha256": "f714802e0e3a089d1e9373de4344ecd7da5be185ec2e6abc44adea6796a5891c",
+      "call_address": 1074831830,
+      "target": 1074855584,
+      "original_sha256": "76ab1c2b81dc8a3dece230bc948c01937ca0623504891dc3f1593af9e2ed02ef"
+    },
+    {
+      "role": "read_call",
+      "destination": 1074795180,
+      "source": 1073724004,
+      "bytes": 8,
+      "sha256": "8bd6ac451d155d6558c9f958d1c44f432d4bcd1c01e4665fd7814a4616d2cc5b",
+      "call_address": 1074795182,
+      "target": 1074791528,
+      "original_sha256": "fdee723835958ac6ffffa677bc74066efecbf295ea4c9a5c50e6a19f45075189"
+    },
+    {
+      "role": "success1_call",
+      "destination": 1074820140,
+      "source": 1073724012,
+      "bytes": 8,
+      "sha256": "0059e8150c4b9a7da37224f654c463c88eaf73c43106dd15b02a832e69ccf951",
+      "call_address": 1074820141,
+      "target": 1074791716,
+      "original_sha256": "fdd60acf51e196cee37ba5dcad002f70c935d07c922fe2afb60cc485e143107e"
+    },
+    {
+      "role": "success2_call",
+      "destination": 1074820276,
+      "source": 1073724020,
+      "bytes": 8,
+      "sha256": "2b3a25f581cdcc2f4b8d63caecb97bf01a7c583dfba1b179708eba753a1bf143",
+      "call_address": 1074820278,
+      "target": 1074791716,
+      "original_sha256": "7ce92b67def62501920fbfd568a5506616c4a0fd80b812a478e4fca28f79244b"
+    },
+    {
+      "role": "success3_call",
+      "destination": 1074820520,
+      "source": 1073724028,
+      "bytes": 8,
+      "sha256": "d34e7400def8986890a250231d714d5e5e3d9f02ff724f746bd732bc0f06d733",
+      "call_address": 1074820522,
+      "target": 1074791716,
+      "original_sha256": "5e200aa1dae08a893548297ea07c6c76063c7819dd5d1295c834820f29c55926"
+    },
+    {
+      "role": "timeout_call",
+      "destination": 1074822084,
+      "source": 1073724036,
+      "bytes": 8,
+      "sha256": "ed76d64e586af507f57d58bd8339b72f743506e9760cda2282bb3901bcf33e2b",
+      "call_address": 1074822086,
+      "target": 1074791772,
+      "original_sha256": "aa73ef1773502d2f966a54af980876c8a1076f2387719fff7a623d9b81ef1c6a"
+    },
+    {
+      "role": "agg_timeout_call",
+      "destination": 1074822076,
+      "source": 1073724044,
+      "bytes": 8,
+      "sha256": "4296447a85c30f42c1f0fc5ce0294e3eef969dd246f5f4b3e30bf800523191f8",
+      "call_address": 1074822078,
+      "target": 1074792744,
+      "original_sha256": "149d3c8bbbe97508c7a3efd97ef7a71ddea5cf935fef63149554f9997f85d5bd"
+    },
+    {
+      "role": "ba_call",
+      "destination": 1074829240,
+      "source": 1073724052,
+      "bytes": 8,
+      "sha256": "8eb13acb5a1928dc0d03c5c67c33d244211722a28e1b0e67c79fc004dfdc2246",
+      "call_address": 1074829243,
+      "target": 1074855856,
+      "original_sha256": "0279d83e48d24bbe7a2bd24a46b9b91dc88e19078a2a6b4a1bbdecb4d68447cd"
+    },
+    {
+      "role": "ba_window_call",
+      "destination": 1074795460,
+      "source": 1073724060,
+      "bytes": 8,
+      "sha256": "e2697c61bf60dc098081c9aede914fcbb63857ef2767feee7130007032bdd7f0",
+      "call_address": 1074795463,
+      "target": 1074836768,
+      "original_sha256": "87f2ef09512e5ee6cf1c1605b4d42f6e600fe1981c219044fc5b8e2199631378"
+    },
+    {
+      "role": "high_rate_aggregate_budget",
+      "destination": 1074840032,
+      "source": 1073724068,
+      "bytes": 4,
+      "sha256": "11784f5822da7ba9bca366a1c2f750d78b77458b51b05419a1e14961a56c7e92",
+      "old_bytes": 10920,
+      "new_bytes": 12480,
+      "original_sha256": "db21f9a53d23ae8a7d2cf9969a5ad59e5450435499830682bf414c5aeba47eba"
+    }
+  ],
+  "upper": {
+    "destination": 1074855112,
+    "source": 1073724072,
+    "bytes": 796,
+    "sha256": "ad1f8fcc27fbdfb4cbd90987c76914b3c1a5bf05201dc53d7b16367930e6dabc"
+  },
+  "entry": 1074855168,
+  "bootstrap_bytes": 160,
+  "symbols": {
+    "report_control": "0x4010fd00",
+    "report_tx_done": "0x4010fea0",
+    "debug_read": "0x40100468",
+    "power_apply": "0x40101440",
+    "power_control": "0x4010d3f0"
+  },
+  "event_capacity": 64,
+  "payload_bytes": 52,
+  "records_per_event": 4,
+  "protocol": "TXR8",
+  "retained_completion_capacity": 32,
+  "notification_batch_records": 4,
+  "explicit_partial_flush_flag": 1,
+  "active_attempt_tracking_slots": 16,
+  "event_buffer_bytes": 64,
+  "tx_ba_window_enforced": true,
+  "tx_ba_policy": "minimum accepted TX window per peer lifetime, ceiling8",
+  "pipeline_stop_probes_removed": true,
+  "radio_group_hist_bins": 9,
+  "radio_group_sum_word": 9,
+  "radio_group_max_word": 14,
+  "original_reclaim_unwrapped": true,
+  "install_trigger": "first valid explicit TXR8 capability request, after runtime INIT",
+  "init_after_install": "unsupported; host must reset and download fresh firmware",
+  "license": "Apache-2.0",
+  "experimental": true,
+  "mainline_ready": false
+}

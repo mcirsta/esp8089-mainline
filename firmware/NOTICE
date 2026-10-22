@@ -1,0 +1,50 @@
+MODIFIED ESP8089 FIRMWARE — experimental TXR8 compact-completion candidate, 2026-10-19
+
+This is a modified derivative of Espressif System's ESP8089
+firmware/eagle_fw_first_init_v19.bin (SHA2561b8b7f93f40d3c2dd7ab7f3e2d29cd118604249a5926a320163bf358254e4162).
+The original firmware and newly written extensions are Apache-2.0; see
+LICENSE-firmware.txt. Original stage1 calibration firmware is unchanged.
+Vendor permission / attribution:
+https://github.com/al177/esp8089/commit/0fd883fe43d969d1fcf159d2e4a4a8e7c04200b0
+
+Changes: retained radio-completion reports with host cursor acknowledgement,
+replay and explicit capability negotiation; live calibrated power ceiling;
+read-only diagnostic access; saved interrupt-state protection; a capability-
+installed RAM code overlay reusing retired startup/INIT/debug functions;
+bounded per-packet DATA-attempt counts and last observed transmit PHY,
+including aggregate members and excluding CTS/BAR exchanges. Unknown final
+attempt histories are explicitly marked. This does not provide every earlier
+per-rate attempt or an absolute radiated-power measurement.
+
+Source, fixed-original builder, linker layout, copy plans and output hashes
+identify these modifications. This is not a complete source release of the
+original firmware. No ESP8266 SDK object, chip ROM dump, credentials or Xiaomi
+installed firmware image is included. All hardware tests use temporary RAM.
+
+The Linux consumer has its own GPL-2.0 license; it is not part of this firmware
+binary. Experimental status and validation limits are recorded separately.
+
+Additional modification: bounded, IRQ-safe allocation for new completion and
+power-reply events preserves an original control buffer in the shared ROM pool.
+It reuses retired PP initialization space only after capability installation.
+
+Retained-completion capacity continues in every fixed-size reply; this
+candidate retains 32 records and uses the matching TXR7 Linux consumer.
+Ring size is unchanged from TXR6 W32 (256 extra bytes relative to TXR5).
+Event payloads remain 52 bytes, with two records per event and the original
+shared four-buffer pool unchanged.
+
+TXR7 additionally batches completion notifications at four records and uses
+a distinct explicit partial-flush flag in Linux polls. Original radio data,
+credit geometry, event size and control-buffer reserve are unchanged.
+
+TXR8 compact-completion candidate, 2026-10-19: each retained completion is
+8bytes (sequence and packed outcome/NoACK/known-attempt-count/final-PHY),
+replacing16byte raw metadata records. Four records now fit a single unchanged
+52byte event. Distinct TXR8 magic prevents pairing with old consumers.
+The4record batching threshold,32record retention,52byte payload,64byte shared
+ROM buffers and original control reserve remain unchanged. Full raw descriptor
+flags and the redundant unobserved PHY byte are no longer exported. Unknown
+histories stay explicitly unknown; invalid outcomes fail closed.
+Includes terminal aggregate-stop counters; original ROM reclaim is unwrapped.
+Performance-only RAM candidate; no stability acceptance or promotion.

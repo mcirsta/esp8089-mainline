@@ -26,12 +26,13 @@ On the tested board it passed:
 - repeated unload/reload and reassociation testing from RAM;
 - W=1, Sparse and focused checkpatch checks.
 
-The driver is **not yet mainline-ready**. Remaining work includes firmware ABI
-and redistribution provenance, normal kernel-tree packaging and maintainership,
-broader RF/cipher interoperability evidence, and resolution of parked broadcast
-and in-place rekey investigations. A one-off SMP Qt startup KASAN report occurred
-in the core futex/hrtimer path before association; it has not been attributed to
-this driver and has not been reproduced.
+The driver is **not yet mainline-ready**. Remaining work includes normal
+kernel-tree packaging and maintainership, review of the driver-specific
+firmware ABI for `linux-firmware`, broader RF/cipher interoperability evidence,
+and resolution of parked broadcast and in-place rekey investigations. A
+one-off SMP Qt startup KASAN report occurred in the core futex/hrtimer path
+before association; it has not been attributed to this driver and has not been
+reproduced.
 
 ## Firmware
 
@@ -42,9 +43,10 @@ espressif/esp8089-cal-v19.bin
 espressif/esp8089-txr8-v1.bin
 ```
 
-They implement the driver-specific TXR8 and PWR1 interfaces. They are not
-included here because their redistribution terms and provenance have not been
-resolved. An incompatible firmware image is rejected during probe.
+They implement the driver-specific TXR8 and PWR1 interfaces. The exact tested
+binaries, their Apache-2.0 license and notices, the fixed vendor input, overlay
+source, tests and reproducible build are included in [`firmware/`](firmware/).
+An incompatible firmware image is rejected during probe.
 
 ## Kernel integration
 
@@ -87,6 +89,7 @@ failure recovery, aggregation limits and compact TX completion validation.
 
 The kernel module is GPL code. Individual files retain their SPDX identifiers;
 the repository includes the GNU GPL version 2 text in [`LICENSE`](LICENSE).
-The firmware files described above are separate works and are not covered or
-distributed by this repository.
+The firmware is a separate Apache-2.0 work; see
+[`firmware/LICENSE`](firmware/LICENSE), [`firmware/NOTICE`](firmware/NOTICE)
+and [`firmware/NOTICE-BAW1`](firmware/NOTICE-BAW1).
 
